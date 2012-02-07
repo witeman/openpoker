@@ -177,9 +177,6 @@ is_three_kind(Hand, [C, D, H, S]) ->
     ]),
     is_three_kind(Hand, L, [C, D, H, S]).
 
-%% 修正了这个判牌的Bug
-is_three_kind(_, [], _) ->
-    none.
 
 is_three_kind(Hand, [H|T], Rep) ->
     if 
@@ -192,6 +189,9 @@ is_three_kind(Hand, [H|T], Rep) ->
         true ->
             is_three_kind(Hand, T, Rep)
     end;
+
+is_three_kind(_, [], _) ->
+    none.
 
 
 is_two_pair(Hand, Rep) ->

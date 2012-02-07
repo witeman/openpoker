@@ -1,0 +1,9 @@
+%% -*- erlang -*- 
+{application, openpoker,
+ [{description, "openpoker"},
+  {vsn, "1.0"},
+  {modules, []},
+  {registered, []},
+  %%{mod, {'open_app', []}},
+  {env, []},
+  {applications, [kernel, stdlib, crypto]}]}.
