@@ -37,7 +37,9 @@ install(Nodes) when is_list(Nodes) ->
     mnesia:stop(),
     mnesia:delete_schema(Nodes),
     catch(mnesia:create_schema(Nodes)),
-    db:start(),
+    db:start(), %% 为什么这样命名？上面是mnesia:stop()!
+
+    %% 这个结构不如我的_mnesia.erl里面创建表的方法好
     install_counter(Nodes),
     install_player_info(Nodes),
     install_player(Nodes),
@@ -47,7 +49,10 @@ install(Nodes) when is_list(Nodes) ->
     install_cluster_config(Nodes),
     install_game_config(Nodes),
     install_tourney_config(Nodes),
+
+    %% 创建些房间的信息
     populate(),
+    %% 重置Counter的信息
     reset_counters(),
     ok.
 
@@ -145,6 +150,7 @@ install_counter(Nodes) ->
                             ]).
 
 populate() ->
+    %% 创建tab_game_config table 的一条记录
     g:setup(?GT_IRC_TEXAS, 20, 
             #limit{ type = ?LT_FIXED_LIMIT, low = 10, high = 20}, 
             ?START_DELAY, ?PLAYER_TIMEOUT,

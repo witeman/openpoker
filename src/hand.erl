@@ -78,12 +78,12 @@ is_straight_flush(Hand, Rep) ->
             none;
         Hand1 ->
             High = Hand1#hand.high1,
-      case is_straight(Hand, [High, High, High, High]) of
+            case is_straight(Hand, [High, High, High, High]) of
                 none ->
                     none;
                 Hand2 ->
                     Hand2#hand{ rank = ?HC_STRAIGHT_FLUSH }
-      end
+            end
     end.
 
 is_flush(Hand, Rep) ->
@@ -94,9 +94,9 @@ is_flush(Hand, Mask, [H|T]) ->
     Score = Mask band H,
     Count = bits:bits1(Score),
     if 
-  Count < 5 ->
-      is_flush(Hand, Mask, T);
-  true ->
+        Count < 5 ->
+            is_flush(Hand, Mask, T);
+        true ->
             High1 = bits:clear_extra_bits(Score, 5),
             Hand#hand{ rank = ?HC_FLUSH, high1 = High1 }
     end;
@@ -104,17 +104,19 @@ is_flush(Hand, Mask, [H|T]) ->
 is_flush(_, _, []) ->
     none.
 
+%% 是不是顺判断得很妙啊！
 is_straight(Hand, Rep) ->
     Mask = make_mask(Rep),
     is_straight(Hand, Mask, Rep).
 
 is_straight(Hand, Mask, Rep) 
   when is_list(Rep) ->
+    %% 如果第14位(A)有，那么就把第一位置1
     if             %AKQJT98765432A
-  Mask band 2#10000000000000 > 0 ->
-      Value = Mask bor 1;
-  true ->
-      Value = Mask
+        Mask band 2#10000000000000 > 0 ->
+            Value = Mask bor 1;
+        true ->
+            Value = Mask
     end,                %AKQJT98765432A
     is_straight(Hand, Value, 2#11111000000000);
 
@@ -125,23 +127,23 @@ is_straight(_, _, Mask)
 is_straight(Hand, Value, Mask) 
   when Mask >= 2#11111 ->
     if 
-  Value band Mask =:= Mask ->
+        Value band Mask =:= Mask ->
             Hand#hand{ rank = ?HC_STRAIGHT, high1 = Mask };
-  true ->
-      is_straight(Hand, Value, Mask bsr 1)
+        true ->
+            is_straight(Hand, Value, Mask bsr 1)
     end.
   
 is_four_kind(Hand, [C, D, H, S]) ->
     Value = C band D band H band S,
     if
-  Value > 0 ->
+        Value > 0 ->
             Hand#hand{ 
               rank = ?HC_FOUR_KIND, 
               high1 = Value, 
               score = score([C, D, H, S], Value, 1)
              };
-  true ->
-      none
+        true ->
+            none
     end.
 
 is_full_house(Hand, Rep) ->
@@ -167,26 +169,30 @@ is_full_house(Hand, Rep) ->
 is_three_kind(Hand, [C, D, H, S]) ->
     L = lists:sort(fun(A, B) ->
          A > B
-       end, [C band D band H,
-       D band H band S,
-       H band S band C,
-       S band C band D]),
+        end, [
+                C band D band H,
+                D band H band S,
+                H band S band C,
+                S band C band D
+    ]),
     is_three_kind(Hand, L, [C, D, H, S]).
+
+%% 修正了这个判牌的Bug
+is_three_kind(_, [], _) ->
+    none.
 
 is_three_kind(Hand, [H|T], Rep) ->
     if 
-  H > 0 ->
+        H > 0 ->
             Hand#hand{
               rank = ?HC_THREE_KIND, 
               high1 = high_bit(H), 
               score = score(Rep, H, 2)
              };
-  true ->
-      is_three_kind(Hand, T, Rep)
+        true ->
+            is_three_kind(Hand, T, Rep)
     end;
 
-is_three_kind(_, [], _) ->
-    none.
 
 is_two_pair(Hand, Rep) ->
     case is_pair(Hand, Rep) of
@@ -233,6 +239,7 @@ is_pair(Hand, [H|T], Rep) ->
 is_pair(_, [], _) ->
     none.
 
+%% 把牌分成四堆，按照这样的顺序：[Club, Diamond, Heart, Spade]
 make_rep(Hand = #hand{}) ->
     make_rep(Hand#hand.cards);
 
@@ -262,6 +269,7 @@ clear_high_bit([C, D, H, S], High) ->
      H band (bnot High),
      S band (bnot High)].
 
+%% 找出剩下的牌
 score(Rep, High, Bits) ->
     Mask = make_mask(Rep),
     Mask1 = Mask band (bnot High),
@@ -443,6 +451,8 @@ player_hand(#hand{ rank = Rank, high1 = High }) ->
 %%%
 
 make_rep_test() ->
+    %% [梅花, 方块,    红心,  黑桃]
+    %% [Club, Diamond, Heart, Spade]
     %%  AKQJT98765432A
     [2#00000010000000,
      2#00101000011000,
