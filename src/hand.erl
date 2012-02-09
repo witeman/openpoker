@@ -60,9 +60,9 @@ rank(Hand) ->
 
 rank(Hand, [Rank|T], Rep) ->
     case Rank(Hand, Rep) of
-  none ->
-      rank(Hand, T, Rep);
-  Hand1 ->
+        none ->
+            rank(Hand, T, Rep);
+        Hand1 ->
             Hand1
     end;
 
@@ -199,8 +199,8 @@ is_two_pair(Hand, Rep) ->
         none ->
             none;
         Hand1 = #hand{ rank = ?HC_PAIR, high1 = High1 } ->
-      Rep1 = clear_high_bit(Rep, High1),
-      case is_pair(Hand1, Rep1) of
+            Rep1 = clear_high_bit(Rep, High1),
+            case is_pair(Hand1, Rep1) of
                 none ->
                     none;
                 Hand2 = #hand{ rank = ?HC_PAIR, high1 = High2 } ->
@@ -270,13 +270,13 @@ clear_high_bit([C, D, H, S], High) ->
      S band (bnot High)].
 
 %% 找出剩下的牌
+%% Rep四门花色的牌信息, High当前的最高牌型信息, Bits需要取的牌数，由高往低取
 score(Rep, High, Bits) ->
     Mask = make_mask(Rep),
     Mask1 = Mask band (bnot High),
     bits:clear_extra_bits(Mask1, Bits).
 
 %% Make a list of cards from a space-delimited string 
-
 make_cards(S)
   when is_list(S) ->
     lists:map(fun make_card/1, 
@@ -284,50 +284,50 @@ make_cards(S)
 
 make_card({F, S}) ->
     Face = case F of 
-         two -> ?CF_TWO;
-         three -> ?CF_THREE;
-         four -> ?CF_FOUR;
-         five -> ?CF_FIVE;
-         six -> ?CF_SIX;
-               seven -> ?CF_SEVEN;
-         eight -> ?CF_EIGHT;
-         nine -> ?CF_NINE;
-         ten -> ?CF_TEN;
-         jack -> ?CF_JACK;
-         queen -> ?CF_QUEEN;
-         king -> ?CF_KING;
-         ace -> ?CF_ACE
-     end,
+        two -> ?CF_TWO;
+        three -> ?CF_THREE;
+        four -> ?CF_FOUR;
+        five -> ?CF_FIVE;
+        six -> ?CF_SIX;
+        seven -> ?CF_SEVEN;
+        eight -> ?CF_EIGHT;
+        nine -> ?CF_NINE;
+        ten -> ?CF_TEN;
+        jack -> ?CF_JACK;
+        queen -> ?CF_QUEEN;
+        king -> ?CF_KING;
+        ace -> ?CF_ACE
+    end,
     Suit = case S of 
-         clubs -> ?CS_CLUBS;
-         diamonds -> ?CS_DIAMONDS;
-         hearts -> ?CS_HEARTS;
-         spades -> ?CS_SPADES
-     end,
+        clubs -> ?CS_CLUBS;
+        diamonds -> ?CS_DIAMONDS;
+        hearts -> ?CS_HEARTS;
+        spades -> ?CS_SPADES
+    end,
     make_card(Face, Suit);
 
 make_card([H, T]) ->
     Face = case H of 
-         $2 -> ?CF_TWO;
-         $3 -> ?CF_THREE;
-         $4 -> ?CF_FOUR;
-         $5 -> ?CF_FIVE;
-         $6 -> ?CF_SIX;
-         $7 -> ?CF_SEVEN;
-         $8 -> ?CF_EIGHT;
-         $9 -> ?CF_NINE;
-         $T -> ?CF_TEN;
-         $J -> ?CF_JACK;
-         $Q -> ?CF_QUEEN;
-         $K -> ?CF_KING;
-         $A -> ?CF_ACE
-     end,
+        $2 -> ?CF_TWO;
+        $3 -> ?CF_THREE;
+        $4 -> ?CF_FOUR;
+        $5 -> ?CF_FIVE;
+        $6 -> ?CF_SIX;
+        $7 -> ?CF_SEVEN;
+        $8 -> ?CF_EIGHT;
+        $9 -> ?CF_NINE;
+        $T -> ?CF_TEN;
+        $J -> ?CF_JACK;
+        $Q -> ?CF_QUEEN;
+        $K -> ?CF_KING;
+        $A -> ?CF_ACE
+    end,
     Suit = case T of 
-         $C -> ?CS_CLUBS;
-         $D -> ?CS_DIAMONDS;
-         $H -> ?CS_HEARTS;
-         $S -> ?CS_SPADES
-     end,
+        $C -> ?CS_CLUBS;
+        $D -> ?CS_DIAMONDS;
+        $H -> ?CS_HEARTS;
+        $S -> ?CS_SPADES
+    end,
     make_card(Face, Suit).
 
 make_card(Face, Suit) ->
