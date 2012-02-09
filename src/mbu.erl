@@ -35,7 +35,7 @@
 -include("ircdb.hrl").
 
 opendb() ->
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2}]),
     Dets.
 
@@ -169,20 +169,20 @@ match_win_amounts([Amt1|Rest1], [Amt2|Rest2]) ->
     end.
 
 remove(GameId) ->
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2}]),
     dets:delete(Dets, GameId),
     dets:close(Dets).
 
 print(GameId) ->
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2}]),
     [Game] = dets:lookup(Dets, GameId),
     io:format("~p~n", [Game]),
     dets:close(Dets).
 
 filter() ->
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2}]),
     Props1 = dets:info(Dets),
     Count1 = fetch_prop(size, Props1),
@@ -194,7 +194,7 @@ filter() ->
     dets:close(Dets).
 
 count() ->
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2}]),
     Props = dets:info(Dets),
     Count = fetch_prop(size, Props),

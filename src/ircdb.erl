@@ -33,7 +33,7 @@ convert(Dir) ->
     Ets = ets:new(ircdb, [{keypos, 2}]),
     read_hand_file(Ets, HandFile),
     read_player_file(Ets, PlayerFile),
-    {ok, Dets} = dets:open_file(ircdb, [{file, "ircdb.dat"},
+    {ok, Dets} = dets:open_file(ircdb, [{file, "priv/ircdb.dat"},
                                         {keypos, 2},
                                         {ram_file, true}]),   
     ets:to_dets(Ets, Dets),
