@@ -463,6 +463,16 @@ Nick: String.
 | 45 | GID | PID | Seq |
 +----+-----+-----+-----+
 
+REGISTER:
+
+Nick: String
+Password: String
+
+0   1      
++----+------+----------+
+| 46 | Nick | Password |
++----+------+----------+
+
 NOTIFY_BET:
 
 PID posts a bet.
