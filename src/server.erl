@@ -208,6 +208,17 @@ process_logout(Client, _Socket) ->
     {ok, Visitor} = visitor:start(self()),
     Client#client{ player = Visitor }.
 
+process_sign_in(Client, Socket, Nick, Pass) ->
+    io:format("SIGNIN: NICK ~p, PASS ~p~n", [Nick, Pass]),
+    case sign_in:sign_in(Nick, Pass, Socket) of
+        {error, Error} ->
+            ok = ?tcpsend(Socket, #bad{ cmd = ?CMD_SIGN_IN, error = Error}),
+            Client;
+        {ok, PID} ->
+            ok = ?tcpsend(Socket, #you_are{ player = PID}),
+            Client
+    end.
+
 process_ping(Client, Socket, R) ->
     ok = ?tcpsend(Socket, #pong{ orig_send_time = R#ping.send_time }),
     Client.
@@ -251,7 +262,7 @@ process_event(Client, _Socket, Event) ->
 parse_packet(Socket, Client) ->
     receive
         {tcp, Socket, Bin} ->
-            %%io:format("RCV ~p~n", [Bin]),
+            io:format("RCV ~p~n", [Bin]),
             gen_server:cast(Client#client.server, {'BUMP', size(Bin)}),
             Client1 = case catch pp:read(Bin) of
                           {'EXIT', Error} ->
@@ -267,6 +278,8 @@ parse_packet(Socket, Client) ->
                               process_login(Client, Socket, Nick, Pass);
                           #logout{} ->
                               process_logout(Client, Socket);
+                          #sign_in{ nick = Nick, pass = Pass} ->
+                              process_sign_in(Client, Socket, Nick, Pass);
                           R = #ping{} ->
                               process_ping(Client, Socket, R);
                           R = #pong{} ->

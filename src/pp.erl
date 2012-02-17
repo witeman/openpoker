@@ -626,6 +626,16 @@ pong() ->
              timestamp()
             }).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% New Command
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 注册
+sign_in() ->
+    record(sign_in, {
+             nick(),
+             pass()
+            }).
+
 %%% Pickle
 
 write(R) when is_record(R, bad) ->
@@ -788,7 +798,11 @@ write(R) when is_record(R, ping) ->
     [?CMD_PING|pickle(ping(), R)];
 
 write(R) when is_record(R, pong) ->
-    [?CMD_PONG|pickle(pong(), R)].
+    [?CMD_PONG|pickle(pong(), R)];
+
+%% 新增的注册协议的序列化写函数
+write(R) when is_record(R, sign_in) ->
+    [?CMD_SIGN_IN|pickle(sign_in(), R)].
 
 %%% Unpickle
 
@@ -952,11 +966,15 @@ read(<<?CMD_PING, Bin/binary>>) ->
     unpickle(ping(), Bin);
 
 read(<<?CMD_PONG, Bin/binary>>) ->
-    unpickle(pong(), Bin).
+    unpickle(pong(), Bin);
+
+%% 新增的注册协议的读函数
+read(<<?CMD_SIGN_IN, Bin/binary>>) ->
+    unpickle(sign_in(), Bin).
 
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),
-    %%io:format("SND ~p~n", [Bin]),
+    lager:info("SND ~p~n", [Bin]),
     case catch gen_tcp:send(Socket, Bin) of
         ok ->
             ok;
