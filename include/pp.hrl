@@ -438,7 +438,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 用户注册的协议
--define(CMD_SIGN_IN, 56).  
+-define(CMD_SIGN_IN, 46).  
 
 -record(sign_in, {
         nick,
