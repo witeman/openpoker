@@ -169,6 +169,7 @@ start_accept(Listen, Fun) ->
 start_child(Parent, Listen, Fun) ->
     case gen_tcp:accept(Listen) of
         {ok, Socket} ->
+            io:format("ACCEPT: ~p~n", [Socket]),
             Parent ! {istarted,self()},       % tell the controller
             inet:setopts(Socket, [{nodelay,true},
                                   {packet, 2},
