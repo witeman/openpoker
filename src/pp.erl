@@ -399,6 +399,7 @@ seat_query() ->
 player_query() ->
     record(player_query, {
              player()
+             %int()
             }).
 
 balance_query() ->

@@ -189,18 +189,42 @@ handle_cast(#seat_query{ game = Game }, Data) ->
     {noreply, Data};
 
 handle_cast(#player_query{ player = PID }, Data) ->
-    case db:read(tab_player_info, PID) of
-        [Info] ->
-            handle_cast(_ = #player_info{
-                          player = self(),
-                          total_inplay = inplay(Data),
-                          nick = Info#tab_player_info.nick,
-                          location = Info#tab_player_info.location
-                         }, Data);
+    %io:format("PID: ~p~n", [PID]),
+    %io:format("DATA: ~p~n", [Data]),
+    Self = self(),
+    case PID of
+        Self ->
+            %io:format("PID: ~p~n", [PID]),
+            case db:read(tab_player_info, Data#pdata.pid) of
+                [Info] ->
+                    %io:format("INFO: ~p~n", [Info]),
+                    handle_cast(_ = #player_info{
+                            player = Data#pdata.pid,
+                            total_inplay = inplay(Data),
+                            nick = Info#tab_player_info.nick,
+                            location = Info#tab_player_info.location
+                        }, Data);
+                _ -> 
+                    oops
+            end;
         _ ->
+            %io:format("NOT MATCH~n"),
             oops
     end,
     {noreply, Data};
+%    case db:read(tab_player_info, PID) of
+%        [Info] ->
+%            handle_cast(_ = #player_info{
+%                          player = self(),
+%                          total_inplay = inplay(Data),
+%                          nick = Info#tab_player_info.nick,
+%                          location = Info#tab_player_info.location
+%                         }, Data);
+%        _ ->
+%            io:format("Not Found!~n"),
+%            oops
+%    end,
+%    {noreply, Data};
 
 handle_cast(R = #start_game{}, Data) ->
     [CC] = db:read(tab_cluster_config, 0),
@@ -234,23 +258,24 @@ handle_cast(#balance_query{}, Data) ->
 
 handle_cast(R, Data)
   when is_record(R, seat_state);
-is_record(R, bet_req);
-is_record(R, game_stage);
-is_record(R, notify_start_game);
-is_record(R, notify_end_game);
-is_record(R, notify_cancel_game);
-is_record(R, notify_join);
-is_record(R, notify_draw);
-is_record(R, notify_shared);
-is_record(R, notify_leave);
-is_record(R, notify_leave);
-is_record(R, notify_raise);
-is_record(R, notify_win);
-is_record(R, notify_hand);
-is_record(R, show_cards);
-is_record(R, notify_button);
-is_record(R, notify_sb);
-is_record(R, notify_bb) ->
+        is_record(R, player_info);
+        is_record(R, bet_req);
+        is_record(R, game_stage);
+        is_record(R, notify_start_game);
+        is_record(R, notify_end_game);
+        is_record(R, notify_cancel_game);
+        is_record(R, notify_join);
+        is_record(R, notify_draw);
+        is_record(R, notify_shared);
+        is_record(R, notify_leave);
+        is_record(R, notify_leave);
+        is_record(R, notify_raise);
+        is_record(R, notify_win);
+        is_record(R, notify_hand);
+        is_record(R, show_cards);
+        is_record(R, notify_button);
+        is_record(R, notify_sb);
+        is_record(R, notify_bb) ->
     forward_to_client(R, Data),
     {noreply, Data};
 
