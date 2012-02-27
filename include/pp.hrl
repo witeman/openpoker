@@ -444,3 +444,26 @@
         nick,
         pass
     }).
+
+-define(NOTIFY_GAME_DETAIL, 55).
+
+-record(notify_game_detail, {
+    game,
+    pot,
+    players, 
+    seats,
+    stage,
+    min, max,
+    low, high
+}).
+
+-define(NOTIFY_SEAT_DETAIL, 56).
+
+-record(notify_seat_detail, {
+    game,
+    seat,
+    state, 
+    player,
+    inplay,
+    nick
+}).

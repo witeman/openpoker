@@ -53,7 +53,8 @@ behaviour_info(callbacks) ->
      {start, 1}, 
      {stop, 1}, 
      {call, 3},
-     {dispatch, 2}].
+     {dispatch, 2},
+     {cast, 3}].
 
 %%%
 %%% API
@@ -133,8 +134,14 @@ process_cast(Event, Exch) ->
     State = Exch#exch.state,
     Data = Exch#exch.data,
     Ctx = Exch#exch.ctx,
-    Result = Mod:State(Data, Ctx, Event),
-    advance(Exch, Event, Result).
+
+    case Cbk:cast(Event, Ctx, Data) of
+        skip ->
+            Result = Mod:State(Data, Ctx, Event),
+            advance(Exch, Event, Result);
+        {NewGame, NewCtx} ->
+            {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
+    end.
 
 init(Exch = #exch{ stack = [{Mod, Params}|_] }, Event) ->
     Ctx = Exch#exch.ctx,

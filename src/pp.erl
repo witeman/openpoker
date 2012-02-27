@@ -637,6 +637,28 @@ sign_in() ->
              pass()
             }).
 
+notify_game_detail() ->
+    record(notify_game_detail, {
+            game(),
+            amount(),
+            seats(),
+            players(),
+            stage(),
+            price(),
+            price(),
+            price(),
+            price()
+        }).
+
+notify_seat_detail() ->
+    record(notify_seat_detail, {
+            game(),
+            seat(),
+            state(),
+            player(),
+            amount(),
+            nick()
+        }).
 %%% Pickle
 
 write(R) when is_record(R, bad) ->
@@ -803,7 +825,11 @@ write(R) when is_record(R, pong) ->
 
 %% 新增的注册协议的序列化写函数
 write(R) when is_record(R, sign_in) ->
-    [?CMD_SIGN_IN|pickle(sign_in(), R)].
+    [?CMD_SIGN_IN|pickle(sign_in(), R)];
+write(R) when is_record(R, ?NOTIFY_SEAT_DETAIL) ->
+    [?NOTIFY_SEAT_DETAIL | pickle(notify_seat_detail(), R)];
+write(R) when is_record(R, ?NOTIFY_GAME_DETAIL) ->
+    [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)].
 
 %%% Unpickle
 
@@ -971,7 +997,11 @@ read(<<?CMD_PONG, Bin/binary>>) ->
 
 %% 新增的注册协议的读函数
 read(<<?CMD_SIGN_IN, Bin/binary>>) ->
-    unpickle(sign_in(), Bin).
+    unpickle(sign_in(), Bin);
+read(<<?NOTIFY_GAME_DETAIL, Bin/binary>>) ->
+    unpickle(notify_game_detail(), Bin);
+read(<<?NOTIFY_SEAT_DETAIL, Bin/binary>>) ->
+    unpickle(notify_seat_detail(), Bin).
 
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),

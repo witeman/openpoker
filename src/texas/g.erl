@@ -250,6 +250,60 @@ reset_hands(Seats, Count) ->
                                        }),
     reset_hands(Seats1, Count - 1).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% watch event
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+watch(Game, Ctx, R) ->
+    Players = get_seats(Game, ?PS_ANY),
+
+    Detail = #notify_game_detail{
+        game = Game#game.gid,
+        pot = pot:total(Game#game.pot),
+        players = length(Players),
+        seats = size(Game#game.seats),
+        stage = Ctx#texas.stage,
+        min = Game#game.min,
+        max = Game#game.max,
+        low = Game#game.low,
+        high = Game#game.high
+    },
+
+    Detail1 = case Detail#notify_game_detail.stage of
+        undefined ->
+            Detail#notify_game_detail{stage = ?GS_CANCEL};
+        _ ->
+            Detail
+    end,
+
+    gen_server:cast(R#watch.player, Detail1),
+    
+    notify_shared(lists:reverse(Game#game.board), Game, R#watch.player),
+
+    notify_player_state(R#watch.player, Game),
+    watch(R, Game).
+
+notify_player_state(Player, Game) ->
+    L = seat_query(Game),
+    F = fun(S) ->
+        Pid = pp:id_to_player(S#seat_state.player),
+        Nick = case is_pid(Pid) of
+            true ->
+                gen_server:call(Pid, 'NICK QUERY');
+            false ->
+                undefined
+        end,
+
+        gen_server:cast(Player, #notify_seat_detail {
+                game = S#seat_state.game,
+                seat = S#seat_state.seat,
+                state = S#seat_state.state,
+                player = S#seat_state.player,
+                inplay = S#seat_state.inplay,
+                nick = Nick
+        })
+    end,
+    lists:foreach(F, L).
+
 join(Game, R) ->
     Seats = Game#game.seats,
     XRef = Game#game.xref,

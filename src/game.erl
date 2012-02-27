@@ -21,7 +21,7 @@
 -module(game).
 -behaviour(exch).
 
--export([id/0, start/1, stop/1, dispatch/2, call/2]).
+-export([id/0, start/1, stop/1, dispatch/2, call/2, cast/3]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -112,6 +112,12 @@ call({'INPLAY', Player}, Game) ->
     {_, Seat} = g:get_seat(Game, Player),
     Seat#seat.inplay.
 
+cast(R = #watch{}, Ctx, Game) ->
+    NewGame = g:watch(Game, Ctx, R),
+    {NewGame, Ctx};
+
+cast(_, _, _) ->
+    skip.
 %%%
 %%% Utility
 %%%
