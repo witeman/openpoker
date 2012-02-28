@@ -261,11 +261,7 @@ watch(Game, Ctx, R) ->
         pot = pot:total(Game#game.pot),
         players = length(Players),
         seats = size(Game#game.seats),
-        stage = Ctx#texas.stage,
-        min = Game#game.min,
-        max = Game#game.max,
-        low = Game#game.low,
-        high = Game#game.high
+        stage = Ctx#texas.stage
     },
 
     Detail1 = case Detail#notify_game_detail.stage of
@@ -275,12 +271,8 @@ watch(Game, Ctx, R) ->
             Detail
     end,
 
-    gen_server:cast(R#watch.player, Detail1),
+    gen_server:cast(R#watch.player, Detail1).
     
-    notify_shared(lists:reverse(Game#game.board), Game, R#watch.player),
-
-    notify_player_state(R#watch.player, Game),
-    watch(R, Game).
 
 notify_player_state(Player, Game) ->
     L = seat_query(Game),
@@ -747,14 +739,14 @@ query_op(Arg, Op, Value)
 
 find(GameType, LimitType,
      ExpOp, Expected, 
-     JoinOp, Joined,
-     WaitOp, Waiting) ->
+     MinOp, Min,
+     TimeoutOp, Timeout) ->
     F = fun() -> find_1(GameType, LimitType) end,
     {atomic, L} = mnesia:transaction(F),
     F1 = fun(R = #game_info{}) ->
-                 query_op(R#game_info.required, ExpOp, Expected) 
-                     and query_op(R#game_info.joined, JoinOp, Joined) 
-                     and query_op(R#game_info.waiting, WaitOp, Waiting)
+                 query_op(R#game_info.seat_count, ExpOp, Expected) 
+                     and query_op(R#game_info.timeout, TimeoutOp, Timeout) 
+                     and query_op((R#game_info.limit)#limit.min, MinOp, Min)
          end,
     {atomic, lists:filter(F1, L)}.
 
@@ -776,7 +768,8 @@ find_1(GameType, LimitType) ->
                         seat_count = R#tab_game_xref.seat_count,
                         required = R#tab_game_xref.required,
                         joined = Joined,
-                        waiting = Waiting
+                        waiting = Waiting,
+                        timeout = R#tab_game_xref.timeout
                        }
               end, L).
 

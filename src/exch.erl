@@ -34,7 +34,9 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+-include("common.hrl").
 -include("test.hrl").
+-include("pp.hrl").
 
 -record(exch, {
           parent,
@@ -129,19 +131,26 @@ process_call(Event, Exch) ->
     Cbk:call(Event, Exch#exch.data).
 
 process_cast(Event, Exch) ->   
-    %io:format("EVENT: ~p~n", [Event]),
     {Mod, _} = hd(Exch#exch.stack),
     State = Exch#exch.state,
     Data = Exch#exch.data,
     Ctx = Exch#exch.ctx,
-
-    case Cbk:cast(Event, Ctx, Data) of
-        skip ->
-            Result = Mod:State(Data, Ctx, Event),
-            advance(Exch, Event, Result);
-        {NewGame, NewCtx} ->
-            {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
-    end.
+    
+    if
+        is_record(Event, watch) ->
+            io:format("EVENT: ~p~n", [Event]);
+        true ->
+            ok
+    end,
+    Result = Mod:State(Data, Ctx, Event),
+    advance(Exch, Event, Result).
+%    case Cbk:cast(Event, Ctx, Data) of
+%        skip ->
+%            Result = Mod:State(Data, Ctx, Event),
+%            advance(Exch, Event, Result);
+%        {NewGame, NewCtx} ->
+%            {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
+%    end.
 
 init(Exch = #exch{ stack = [{Mod, Params}|_] }, Event) ->
     Ctx = Exch#exch.ctx,

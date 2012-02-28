@@ -239,12 +239,13 @@ process_test_start_game(Client, Socket, R) ->
 
 process_game_query(Client, Socket, Q) 
   when is_record(Q, game_query) ->
+    io:format("GAME QUERY: ~p~n", [Q]),
     find_games(Socket, 
                Q#game_query.game_type, 
                Q#game_query.limit_type,
                Q#game_query.expected,
-               Q#game_query.joined,
-               Q#game_query.waiting),
+               Q#game_query.min,
+               Q#game_query.timeout),
     Client.
 
 process_event(Client, _Socket, Event) ->
@@ -318,13 +319,19 @@ send_games(Socket, [H|T]) ->
 find_games(Socket, 
            GameType, LimitType,
            #query_op{ op = ExpOp, val = Expected }, 
-           #query_op{ op = JoinOp, val = Joined },
-           #query_op{ op = WaitOp, val = Waiting }) ->
+           #query_op{ op = MinOp, val = Min },
+           #query_op{ op = TimeoutOp, val = Timeout }) ->
     {atomic, L} = g:find(GameType, LimitType,
                          ExpOp, Expected, 
-                         JoinOp, Joined,
-                         WaitOp, Waiting),
-    send_games(Socket, L).
+                         MinOp, Min,
+                         TimeoutOp, Timeout),
+    if
+        length(L) =:= 0 -> 
+            send_games(Socket, []);
+        true ->
+            [H | _T] = lists:keysort(9, L),
+            send_games(Socket, [H])
+    end.
 
 start_games() ->
     {atomic, Games} = db:find(tab_game_config),

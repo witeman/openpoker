@@ -38,7 +38,7 @@
 					observers = [], 
 					%% time given to players 
 					%% to make a move
-					timeout = ?PLAYER_TIMEOUT,
+					timeout = ?SLOW_PLAYER_TIMEOUT,
 					%% number of raises so far
 					raise_count = 0,
 					%% players required to start a game

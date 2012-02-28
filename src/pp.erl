@@ -187,13 +187,15 @@ limit() ->
     record(limit, {
              limit_type(),
              price(),
+             price(),
+             price(),
              price()
             }).
 
 query_op() ->
     record(query_op, {
              byte(),
-             byte()
+             int()
             }).
 
 game_to_id(G) 
@@ -428,7 +430,8 @@ game_info() ->
              seat_count(),
              required_players(),
              joined_players(),
-             waiting_players()
+             waiting_players(),
+             player_timeout()
             }).
 
 player_info() ->
@@ -641,8 +644,8 @@ notify_game_detail() ->
     record(notify_game_detail, {
             game(),
             amount(),
-            seats(),
-            players(),
+            seat_count(),
+            byte(),
             stage(),
             price(),
             price(),
@@ -826,9 +829,9 @@ write(R) when is_record(R, pong) ->
 %% 新增的注册协议的序列化写函数
 write(R) when is_record(R, sign_in) ->
     [?CMD_SIGN_IN|pickle(sign_in(), R)];
-write(R) when is_record(R, ?NOTIFY_SEAT_DETAIL) ->
+write(R) when is_record(R, notify_seat_detail) ->
     [?NOTIFY_SEAT_DETAIL | pickle(notify_seat_detail(), R)];
-write(R) when is_record(R, ?NOTIFY_GAME_DETAIL) ->
+write(R) when is_record(R, notify_game_detail) ->
     [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)].
 
 %%% Unpickle

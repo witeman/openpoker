@@ -105,8 +105,8 @@
 					game_type,
 					limit_type,
 					expected, % query op
-					joined, % query op
-					waiting
+                    min,
+                    timeout
 				 }).
 
 -define(CMD_SEAT_QUERY, 14).
@@ -135,7 +135,7 @@
 					seat_count,
 					required = 2,
 					start_delay = ?START_DELAY,
-					player_timeout = ?PLAYER_TIMEOUT,
+					player_timeout = ?SLOW_PLAYER_TIMEOUT,
 					rigged_deck = [],
 					barrier
 				 }).
@@ -150,7 +150,8 @@
 					seat_count,
 					required,
 					joined,
-					waiting
+					waiting,
+                    timeout
 				 }).
 
 -define(CMD_PLAYER_INFO, 19).
