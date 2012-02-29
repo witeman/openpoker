@@ -662,6 +662,11 @@ notify_seat_detail() ->
             amount(),
             nick()
         }).
+
+notify_unwatch() ->
+    record(notify_unwatch, {
+            game()
+        }).
 %%% Pickle
 
 write(R) when is_record(R, bad) ->
@@ -832,7 +837,9 @@ write(R) when is_record(R, sign_in) ->
 write(R) when is_record(R, notify_seat_detail) ->
     [?NOTIFY_SEAT_DETAIL | pickle(notify_seat_detail(), R)];
 write(R) when is_record(R, notify_game_detail) ->
-    [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)].
+    [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)];
+write(R) when is_record(R, notify_unwatch) ->
+    [?NOTIFY_UNWATCH | pickle(notify_unwatch(), R)].
 
 %%% Unpickle
 
@@ -1001,6 +1008,8 @@ read(<<?CMD_PONG, Bin/binary>>) ->
 %% 新增的注册协议的读函数
 read(<<?CMD_SIGN_IN, Bin/binary>>) ->
     unpickle(sign_in(), Bin);
+read(<<?NOTIFY_UNWATCH, Bin/binary>>) ->
+    unpickle(notify_unwatch(), Bin);
 read(<<?NOTIFY_GAME_DETAIL, Bin/binary>>) ->
     unpickle(notify_game_detail(), Bin);
 read(<<?NOTIFY_SEAT_DETAIL, Bin/binary>>) ->

@@ -142,15 +142,16 @@ process_cast(Event, Exch) ->
         true ->
             ok
     end,
-    Result = Mod:State(Data, Ctx, Event),
-    advance(Exch, Event, Result).
-%    case Cbk:cast(Event, Ctx, Data) of
-%        skip ->
-%            Result = Mod:State(Data, Ctx, Event),
-%            advance(Exch, Event, Result);
-%        {NewGame, NewCtx} ->
-%            {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
-%    end.
+%    Result = Mod:State(Data, Ctx, Event),
+%    advance(Exch, Event, Result).
+    case Cbk:cast(Event, Ctx, Data) of
+        skip ->
+            Result = Mod:State(Data, Ctx, Event),
+            advance(Exch, Event, Result);
+        {NewGame, NewCtx} ->
+            io:format("NEWGAME: ~p~nNEWCTX: ~p~n", [NewGame, NewCtx]),
+            {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
+    end.
 
 init(Exch = #exch{ stack = [{Mod, Params}|_] }, Event) ->
     Ctx = Exch#exch.ctx,

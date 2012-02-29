@@ -468,3 +468,8 @@
     inplay,
     nick
 }).
+
+-define(NOTIFY_UNWATCH, 57).
+-record(notify_unwatch, {
+        game
+    }).

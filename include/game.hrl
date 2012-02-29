@@ -27,6 +27,7 @@
 					limit,
 					low,
 					high,
+                    min, max,
 					ante,
 					%% card deck
 					deck, 
