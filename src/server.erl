@@ -199,7 +199,12 @@ process_login(Client, Socket, Nick, Pass) ->
             end,
             PID = gen_server:call(Player, 'ID'),
             ok = ?tcpsend(Socket, #you_are{ player = PID }),
-            Client#client{ player = Player }
+            Client1 = Client#client{ player = Player },
+            PlayerQuery = #player_query{player = Client1#client.player},
+            BalanceQuery = #balance_query{},
+            gen_server:cast(Client1#client.player, PlayerQuery),
+            gen_server:cast(Client1#client.player, BalanceQuery),
+            Client1
     end.
 
 process_logout(Client, _Socket) ->
@@ -240,12 +245,18 @@ process_test_start_game(Client, Socket, R) ->
 process_game_query(Client, Socket, Q) 
   when is_record(Q, game_query) ->
     io:format("GAME QUERY: ~p~n", [Q]),
-    find_games(Socket, 
+    Game = find_games(Socket, 
                Q#game_query.game_type, 
                Q#game_query.limit_type,
                Q#game_query.expected,
                Q#game_query.min,
                Q#game_query.timeout),
+    GID = Game#game_info.game,
+    Watch = #watch{ game = GID },
+    Bin = list_to_binary(pp:write(Watch)),
+    Watch1 = pp:read(Bin),
+    Watch2 = Watch1#watch{player = Client#client.player},
+    process_event(Client, Socket, Watch2),
     Client.
 
 process_event(Client, _Socket, Event) ->
@@ -325,12 +336,14 @@ find_games(Socket,
                          ExpOp, Expected, 
                          MinOp, Min,
                          TimeoutOp, Timeout),
-    if
+    Game = if
         length(L) =:= 0 -> 
-            send_games(Socket, []);
+            %send_games(Socket, []);
+            none;
         true ->
             [H | _T] = lists:keysort(9, L),
-            send_games(Socket, [H])
+            % send_games(Socket, [H])
+            H
     end.
 
 start_games() ->
