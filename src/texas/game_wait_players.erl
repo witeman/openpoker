@@ -38,11 +38,17 @@ start(Game, Ctx, [Delay]) ->
 wait_for_players(Game, Ctx, {timeout, _, _}) ->
     Ready = g:get_seats(Game, ?PS_READY),
     ReqCount = Game#game.required_player_count,
+    %io:format("READY: ~p~n", [Ready]),
     Start = (length(Ready) >= ReqCount),
     Empty = g:is_empty(Game),
     if
+        not Empty -> io:format("READY:~p~n", [Ready]);
+        true -> ok
+    end,
+    if
         Start ->
             Game1 = g:notify_start_game(Game),
+            io:format("READY:~p~n", [Ready]),
             {stop, Game1, Ctx};
         Empty ->
             {repeat, Game, Ctx};

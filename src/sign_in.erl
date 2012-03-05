@@ -15,7 +15,7 @@ sign_in(Nick, Pass, Socket)
     when is_binary(Nick),
          is_binary(Pass) ->
     io:format("sign_in:sign_in(~p, ~p, ~p)~n", [Nick, Pass, Socket]),
-    case player:create(Nick, Pass, <<"Test">>, 0) of
+    case player:create(Nick, Pass, <<"Test">>, 10000) of
         {error, Error} ->
             {error, Error};
         {ok, ID} ->
