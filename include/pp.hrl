@@ -105,8 +105,8 @@
 					game_type,
 					limit_type,
 					expected, % query op
-					joined, % query op
-					waiting
+                    min,
+                    timeout
 				 }).
 
 -define(CMD_SEAT_QUERY, 14).
@@ -135,7 +135,7 @@
 					seat_count,
 					required = 2,
 					start_delay = ?START_DELAY,
-					player_timeout = ?PLAYER_TIMEOUT,
+					player_timeout = ?SLOW_PLAYER_TIMEOUT,
 					rigged_deck = [],
 					barrier
 				 }).
@@ -150,7 +150,8 @@
 					seat_count,
 					required,
 					joined,
-					waiting
+					waiting,
+                    timeout
 				 }).
 
 -define(CMD_PLAYER_INFO, 19).
@@ -443,4 +444,32 @@
 -record(sign_in, {
         nick,
         pass
+    }).
+
+-define(NOTIFY_GAME_DETAIL, 55).
+
+-record(notify_game_detail, {
+    game,
+    pot,
+    players, 
+    seats,
+    stage,
+    min, max,
+    low, high
+}).
+
+-define(NOTIFY_SEAT_DETAIL, 56).
+
+-record(notify_seat_detail, {
+    game,
+    seat,
+    state, 
+    player,
+    inplay,
+    nick
+}).
+
+-define(NOTIFY_UNWATCH, 57).
+-record(notify_unwatch, {
+        game
     }).

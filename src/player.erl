@@ -275,6 +275,9 @@ handle_cast(R, Data)
         is_record(R, show_cards);
         is_record(R, notify_button);
         is_record(R, notify_sb);
+        is_record(R, notify_game_detail);
+        is_record(R, notify_seat_detail);
+        is_record(R, notify_unwatch);
         is_record(R, notify_bb) ->
     forward_to_client(R, Data),
     {noreply, Data};

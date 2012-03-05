@@ -22,7 +22,8 @@
 					trace
 				 }).
 
--define(PLAYER_TIMEOUT, 15000).
+-define(SLOW_PLAYER_TIMEOUT, 18000).
+-define(FAST_PLAYER_TIMEOUT, 9000).
 -define(START_DELAY, 14000).
 
 %%% Error codes
@@ -40,6 +41,7 @@
 
 %%% Game stage
 
+-define(GS_CANCEL, 254).
 -define(GS_PREFLOP, 0).
 -define(GS_FLOP, 1).
 -define(GS_TURN, 2).
@@ -62,7 +64,9 @@
 -record(limit, {
 					type,
 					low,
-					high
+					high,
+                    min,
+                    max
 				 }).
 
 %%% Query operator

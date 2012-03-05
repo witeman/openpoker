@@ -187,13 +187,15 @@ limit() ->
     record(limit, {
              limit_type(),
              price(),
+             price(),
+             price(),
              price()
             }).
 
 query_op() ->
     record(query_op, {
              byte(),
-             byte()
+             int()
             }).
 
 game_to_id(G) 
@@ -428,7 +430,8 @@ game_info() ->
              seat_count(),
              required_players(),
              joined_players(),
-             waiting_players()
+             waiting_players(),
+             player_timeout()
             }).
 
 player_info() ->
@@ -637,6 +640,33 @@ sign_in() ->
              pass()
             }).
 
+notify_game_detail() ->
+    record(notify_game_detail, {
+            game(),
+            amount(),
+            seat_count(),
+            byte(),
+            stage(),
+            price(),
+            price(),
+            price(),
+            price()
+        }).
+
+notify_seat_detail() ->
+    record(notify_seat_detail, {
+            game(),
+            seat(),
+            state(),
+            player(),
+            amount(),
+            nick()
+        }).
+
+notify_unwatch() ->
+    record(notify_unwatch, {
+            game()
+        }).
 %%% Pickle
 
 write(R) when is_record(R, bad) ->
@@ -803,7 +833,13 @@ write(R) when is_record(R, pong) ->
 
 %% 新增的注册协议的序列化写函数
 write(R) when is_record(R, sign_in) ->
-    [?CMD_SIGN_IN|pickle(sign_in(), R)].
+    [?CMD_SIGN_IN|pickle(sign_in(), R)];
+write(R) when is_record(R, notify_seat_detail) ->
+    [?NOTIFY_SEAT_DETAIL | pickle(notify_seat_detail(), R)];
+write(R) when is_record(R, notify_game_detail) ->
+    [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)];
+write(R) when is_record(R, notify_unwatch) ->
+    [?NOTIFY_UNWATCH | pickle(notify_unwatch(), R)].
 
 %%% Unpickle
 
@@ -971,11 +1007,17 @@ read(<<?CMD_PONG, Bin/binary>>) ->
 
 %% 新增的注册协议的读函数
 read(<<?CMD_SIGN_IN, Bin/binary>>) ->
-    unpickle(sign_in(), Bin).
+    unpickle(sign_in(), Bin);
+read(<<?NOTIFY_UNWATCH, Bin/binary>>) ->
+    unpickle(notify_unwatch(), Bin);
+read(<<?NOTIFY_GAME_DETAIL, Bin/binary>>) ->
+    unpickle(notify_game_detail(), Bin);
+read(<<?NOTIFY_SEAT_DETAIL, Bin/binary>>) ->
+    unpickle(notify_seat_detail(), Bin).
 
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),
-    io:format("SND ~p~n", [Bin]),
+    io:format("SND ~p~n", [Data]),
     case catch gen_tcp:send(Socket, Bin) of
         ok ->
             ok;

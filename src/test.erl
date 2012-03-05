@@ -630,7 +630,7 @@ simple_game_simulation_test() ->
     ?assertEqual({'START', GID}, wait()),
     %% wait for game to end
     Winners = gb_trees:insert(2, 15.0, gb_trees:empty()),
-    ?assertEqual({'END', GID, Winners}, wait(?PLAYER_TIMEOUT)),
+    ?assertEqual({'END', GID, Winners}, wait(?SLOW_PLAYER_TIMEOUT)),
     timer:sleep(1000),
     %% check balances
     [B1] = db:read(tab_balance, ID1),
@@ -1035,8 +1035,8 @@ find_game(Host, Port, GameType) ->
                         game_type = GameType,
                         limit_type = ?LT_FIXED_LIMIT,
                         expected = #query_op{ op = ?OP_IGNORE, val = 2},
-                        joined = #query_op{ op = ?OP_EQUAL, val = 0},
-                        waiting = #query_op{ op = ?OP_IGNORE, val = 0}
+                        min = #query_op{ op = ?OP_EQUAL, val = 0},
+                        timeout = #query_op{ op = ?OP_IGNORE, val = 0}
                        }),
     X = wait([chat, notify_cancel_game, ping, pong]),
     ?assertEqual(game_info, element(1, X)),
