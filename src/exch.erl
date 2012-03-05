@@ -110,6 +110,7 @@ handle_cast(stop, Exch) ->
     {stop, normal, Exch};
 
 handle_cast(Event, Exch) ->
+    %io:format("EVENT: ~p~n", [Event]),
     process_cast(Event, Exch).
 
 handle_call(Event, _From, Exch) ->
@@ -127,6 +128,7 @@ process_call(Event, Exch) ->
     Cbk:call(Event, Exch#exch.data).
 
 process_cast(Event, Exch) ->   
+    %io:format("EVENT: ~p~n", [Event]),
     {Mod, _} = hd(Exch#exch.stack),
     State = Exch#exch.state,
     Data = Exch#exch.data,
