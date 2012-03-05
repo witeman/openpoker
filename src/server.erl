@@ -289,6 +289,7 @@ parse_packet(Socket, Client) ->
                           R when is_record(R, game_query) ->
                               process_game_query(Client, Socket, R);
                           Event ->
+                              io:format("RCV: ~p~n", [Event]),
                               process_event(Client, Socket, Event)
                       end,
             parse_packet(Socket, Client1);

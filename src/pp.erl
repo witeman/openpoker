@@ -399,6 +399,7 @@ seat_query() ->
 player_query() ->
     record(player_query, {
              player()
+             %int()
             }).
 
 balance_query() ->
@@ -974,7 +975,7 @@ read(<<?CMD_SIGN_IN, Bin/binary>>) ->
 
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),
-    lager:info("SND ~p~n", [Bin]),
+    io:format("SND ~p~n", [Bin]),
     case catch gen_tcp:send(Socket, Bin) of
         ok ->
             ok;
