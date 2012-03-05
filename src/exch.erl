@@ -136,27 +136,11 @@ process_cast(Event, Exch) ->
     Data = Exch#exch.data,
     Ctx = Exch#exch.ctx,
     
-    if
-        is_record(Event, watch) ->
-            io:format("EVENT: ~p~n", [Event]);
-        true ->
-            ok
-    end,
-%    Result = Mod:State(Data, Ctx, Event),
-%    advance(Exch, Event, Result).
-    %io:format("STATE: ~p~nMOD: ~p~nEVENT: ~p~n", [State, Mod, Event]),
     case Cbk:cast(Event, Ctx, Data) of
         skip ->
             Result = Mod:State(Data, Ctx, Event),
-            case Result of
-                {stop, _, _} ->
-                    io:format("STATE: ~p~nMOD: ~p~nEVENT: ~p~n", [State, Mod, Event]);
-                _ -> ok
-            end,
-            %io:format("RESULT: ~p~n", [Result]),
             advance(Exch, Event, Result);
         {NewGame, NewCtx} ->
-            %io:format("NEWGAME: ~p~nNEWCTX: ~p~n", [NewGame, NewCtx]),
             {noreply, Exch#exch{data = NewGame, ctx = NewCtx}}
     end.
 
