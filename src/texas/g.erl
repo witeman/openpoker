@@ -35,7 +35,7 @@
          add_bet/3, new_stage/1, reset_player_state/3,
          pot_size/1, draw/3, draw_shared/2, 
          inplay_plus/3, show_cards/2, rank_hands/1, 
-         pots/1, make/1, make/3
+         pots/1, make/1, make/3, watch/3
         ]).
 
 -include_lib("eunit/include/eunit.hrl").
@@ -249,6 +249,79 @@ reset_hands(Seats, Count) ->
                                         muck = false
                                        }),
     reset_hands(Seats1, Count - 1).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% watch event
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+watch(Game, R) ->
+    Obs = Game#game.observers,
+    Game#game{observers = [R#watch.player | Obs]}.
+
+watch(Game, Ctx, R) ->
+%    io:format("R: ~p~n", [R]),
+    Players = get_seats(Game, ?PS_ANY),
+%    io:format("GET SEATS: ~p~n", [Players]),
+%    io:format("GAME: ~p~n", [Game]),
+%    io:format("CTX: ~p~n", [Ctx]),
+    Detail = #notify_game_detail{
+        game = Game#game.gid,
+        pot = pot:total(Game#game.pot),
+        players = length(Players),
+        seats = size(Game#game.seats),
+        stage = Ctx#texas.stage,
+        min = Game#game.min,
+        max = Game#game.max,
+        low = Game#game.low,
+        high = Game#game.high
+    },
+
+    Detail1 = case Detail#notify_game_detail.stage of
+        undefined ->
+            Detail#notify_game_detail{stage = ?GS_CANCEL};
+        _ ->
+            Detail
+    end,
+%    io:format("CAST: ~p~n", [Detail1]),
+    gen_server:cast(R#watch.player, Detail1),
+
+    notify_shared(lists:reverse(Game#game.board), Game, R#watch.player),
+
+    notify_player_state(R#watch.player, Game),
+    watch(Game, R).
+    
+unwatch(Game, R) ->
+    Obs = lists:delete(R#unwatch.player, Game#game.observers),
+    gen_server:cast(R#unwatch.player, #notify_unwatch{ game = Game#game.gid }),
+    Game#game{ observers = Obs }.
+
+notify_player_state(Player, Game) ->
+    L = seat_query(Game),
+    F = fun(S) ->
+        Pid = pp:id_to_player(S#seat_state.player),
+        Nick = case is_pid(Pid) of
+            true ->
+                gen_server:call(Pid, 'NICK QUERY');
+            false ->
+                undefined
+        end,
+
+        gen_server:cast(Player, #notify_seat_detail {
+                game = S#seat_state.game,
+                seat = S#seat_state.seat,
+                state = S#seat_state.state,
+                player = S#seat_state.player,
+                inplay = S#seat_state.inplay,
+                nick = Nick
+        })
+    end,
+    lists:foreach(F, L).
+
+notify_shared([Card|T], Game, Player) ->
+    Shared = #notify_shared{ game = Game#game.gid, card = Card },
+    gen_server:cast(Player, Shared),
+    notify_shared(T, Game, Player);
+notify_shared([], _Game, _Player) ->
+    ok.
 
 join(Game, R) ->
     Seats = Game#game.seats,
@@ -693,14 +766,14 @@ query_op(Arg, Op, Value)
 
 find(GameType, LimitType,
      ExpOp, Expected, 
-     JoinOp, Joined,
-     WaitOp, Waiting) ->
+     MinOp, Min,
+     TimeoutOp, Timeout) ->
     F = fun() -> find_1(GameType, LimitType) end,
     {atomic, L} = mnesia:transaction(F),
     F1 = fun(R = #game_info{}) ->
-                 query_op(R#game_info.required, ExpOp, Expected) 
-                     and query_op(R#game_info.joined, JoinOp, Joined) 
-                     and query_op(R#game_info.waiting, WaitOp, Waiting)
+                 query_op(R#game_info.seat_count, ExpOp, Expected) 
+                     and query_op(R#game_info.timeout, TimeoutOp, Timeout) 
+                     and query_op((R#game_info.limit)#limit.min, MinOp, Min)
          end,
     {atomic, lists:filter(F1, L)}.
 
@@ -722,7 +795,8 @@ find_1(GameType, LimitType) ->
                         seat_count = R#tab_game_xref.seat_count,
                         required = R#tab_game_xref.required,
                         joined = Joined,
-                        waiting = Waiting
+                        waiting = Waiting,
+                        timeout = R#tab_game_xref.timeout
                        }
               end, L).
 

@@ -199,7 +199,12 @@ process_login(Client, Socket, Nick, Pass) ->
             end,
             PID = gen_server:call(Player, 'ID'),
             ok = ?tcpsend(Socket, #you_are{ player = PID }),
-            Client#client{ player = Player }
+            Client1 = Client#client{ player = Player },
+            PlayerQuery = #player_query{player = Client1#client.player},
+            BalanceQuery = #balance_query{},
+            gen_server:cast(Client1#client.player, PlayerQuery),
+            gen_server:cast(Client1#client.player, BalanceQuery),
+            Client1
     end.
 
 process_logout(Client, _Socket) ->
@@ -239,12 +244,19 @@ process_test_start_game(Client, Socket, R) ->
 
 process_game_query(Client, Socket, Q) 
   when is_record(Q, game_query) ->
-    find_games(Socket, 
+    io:format("GAME QUERY: ~p~n", [Q]),
+    Game = find_games(Socket, 
                Q#game_query.game_type, 
                Q#game_query.limit_type,
                Q#game_query.expected,
-               Q#game_query.joined,
-               Q#game_query.waiting),
+               Q#game_query.min,
+               Q#game_query.timeout),
+    GID = Game#game_info.game,
+    Watch = #watch{ game = GID },
+    Bin = list_to_binary(pp:write(Watch)),
+    Watch1 = pp:read(Bin),
+    Watch2 = Watch1#watch{player = Client#client.player},
+    process_event(Client, Socket, Watch2),
     Client.
 
 process_event(Client, _Socket, Event) ->
@@ -318,13 +330,21 @@ send_games(Socket, [H|T]) ->
 find_games(Socket, 
            GameType, LimitType,
            #query_op{ op = ExpOp, val = Expected }, 
-           #query_op{ op = JoinOp, val = Joined },
-           #query_op{ op = WaitOp, val = Waiting }) ->
+           #query_op{ op = MinOp, val = Min },
+           #query_op{ op = TimeoutOp, val = Timeout }) ->
     {atomic, L} = g:find(GameType, LimitType,
                          ExpOp, Expected, 
-                         JoinOp, Joined,
-                         WaitOp, Waiting),
-    send_games(Socket, L).
+                         MinOp, Min,
+                         TimeoutOp, Timeout),
+    Game = if
+        length(L) =:= 0 -> 
+            %send_games(Socket, []);
+            none;
+        true ->
+            [H | _T] = lists:keysort(9, L),
+            % send_games(Socket, [H])
+            H
+    end.
 
 start_games() ->
     {atomic, Games} = db:find(tab_game_config),

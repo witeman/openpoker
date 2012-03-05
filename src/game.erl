@@ -21,7 +21,7 @@
 -module(game).
 -behaviour(exch).
 
--export([id/0, start/1, stop/1, dispatch/2, call/2]).
+-export([id/0, start/1, stop/1, dispatch/2, call/2, cast/3]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -48,6 +48,8 @@ start([GID, R = #start_game{}]) ->
               end,
       low = (R#start_game.limit)#limit.low, 
       high = (R#start_game.limit)#limit.high, 
+      min = (R#start_game.limit)#limit.min,
+      max = (R#start_game.limit)#limit.max,
       deck = deck:new(R#start_game.rigged_deck),
       pot = pot:new(),
       seats = g:create_seats(R#start_game.seat_count),
@@ -112,6 +114,17 @@ call({'INPLAY', Player}, Game) ->
     {_, Seat} = g:get_seat(Game, Player),
     Seat#seat.inplay.
 
+cast(R = #watch{}, Ctx, Game) ->
+    io:format("WATCH: ~p~n", [R]),
+    NewGame = g:watch(Game, Ctx, R),
+    {NewGame, Ctx};
+
+cast(R = #unwatch{}, Ctx, Game) ->
+    NewGame = g:unwatch(Game, R),
+    {NewGame, Ctx};
+
+cast(_, _, _) ->
+    skip.
 %%%
 %%% Utility
 %%%
