@@ -253,7 +253,7 @@ start_game_slaves(N) ->
 %%% Enable kernel poll and disable SMP. The latter is not obligatory.
 
 common_args() ->
-    "+K true -smp disable".
+    "+K true -smp disable -pa ebin deps/*/ebin".
 
 start_slave_node(Name, Args) ->
     case slave:start_link(net_adm:localhost(), Name, Args) of

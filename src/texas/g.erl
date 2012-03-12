@@ -533,25 +533,27 @@ get_seat(Game, Player)
 
 request_bet(Game, SeatNum, Call, Min, Max) ->
     Seat = element(SeatNum, Game#game.seats),
+    Game1 = broadcast(Game, #notify_actor{ gid = Game#game.gid, seat = SeatNum}),
+
     if 
         %% auto-play enabled
         Seat#seat.cmd_que /= [] ->
-            Seat1 = process_autoplay(Game, Seat),
-            Game#game {
+            Seat1 = process_autoplay(Game1, Seat),
+            Game1#game {
               seats = setelement(SeatNum,
-                                 Game#game.seats,
+                                 Game1#game.seats,
                                  Seat1)
              };
         %% regular bet request
         true ->
             BetReq = #bet_req{
-              game = Game#game.gid,
+              game = Game1#game.gid,
               call = Call,
               min = Min,
               max = Max
              },
             gen_server:cast(Seat#seat.player, BetReq),
-            Game
+            Game1
     end.
 
 %%% Use stored commands instead of asking player

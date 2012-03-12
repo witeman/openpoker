@@ -473,3 +473,9 @@
 -record(notify_unwatch, {
         game
     }).
+
+-define(NOTIFY_ACTOR, 58).
+-record(notify_actor, {
+        gid,
+        seat
+}).

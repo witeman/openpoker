@@ -667,6 +667,11 @@ notify_unwatch() ->
     record(notify_unwatch, {
             game()
         }).
+notify_actor() ->
+    record(notify_actor, {
+            game(),
+            seat()
+        }).
 %%% Pickle
 
 write(R) when is_record(R, bad) ->
@@ -839,7 +844,9 @@ write(R) when is_record(R, notify_seat_detail) ->
 write(R) when is_record(R, notify_game_detail) ->
     [?NOTIFY_GAME_DETAIL | pickle(notify_game_detail(), R)];
 write(R) when is_record(R, notify_unwatch) ->
-    [?NOTIFY_UNWATCH | pickle(notify_unwatch(), R)].
+    [?NOTIFY_UNWATCH | pickle(notify_unwatch(), R)];
+write(R) when is_record(R, notify_actor) ->
+    [?NOTIFY_ACTOR | pickle(notify_actor(), R)].
 
 %%% Unpickle
 
@@ -1013,7 +1020,9 @@ read(<<?NOTIFY_UNWATCH, Bin/binary>>) ->
 read(<<?NOTIFY_GAME_DETAIL, Bin/binary>>) ->
     unpickle(notify_game_detail(), Bin);
 read(<<?NOTIFY_SEAT_DETAIL, Bin/binary>>) ->
-    unpickle(notify_seat_detail(), Bin).
+    unpickle(notify_seat_detail(), Bin);
+read(<<?NOTIFY_ACTOR, Bin/binary>>) ->
+    unpickle(notify_actor(), Bin).
 
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),
