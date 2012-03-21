@@ -57,7 +57,7 @@ make(R = #start_game{}) ->
                    irc_texas_mods(R#start_game.start_delay,
                                   R#start_game.barrier);
                ?GT_TEXAS_HOLDEM ->
-                   texas_holdem_mods(R#start_game.start_delay) 
+                   texas_holdem_mods(R#start_game.start_delay) %first mode is game_wait_players
            end,
     make(R, #texas{}, Mods).
 
@@ -787,7 +787,7 @@ find_1(GameType, LimitType) ->
     lists:map(fun(R) ->
                       Game = R#tab_game_xref.process,
                       GID = R#tab_game_xref.gid,
-                      Joined = gen_server:call(Game, 'JOINED'),
+                      Joined = gen_server:call(Game, 'JOINED'), %g:get_seats
                       Waiting = 0, % not implemented
                       _ = #game_info{
                         game = GID,

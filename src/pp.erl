@@ -1027,6 +1027,7 @@ read(<<?NOTIFY_ACTOR, Bin/binary>>) ->
 send(Socket, Data, Ping) ->
     Bin = list_to_binary(write(Data)),
     io:format("SND ~p~n", [Data]),
+    io:format("SND ~p~n", [Bin]),
     case catch gen_tcp:send(Socket, Bin) of
         ok ->
             ok;

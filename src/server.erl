@@ -200,10 +200,10 @@ process_login(Client, Socket, Nick, Pass) ->
             PID = gen_server:call(Player, 'ID'),
             ok = ?tcpsend(Socket, #you_are{ player = PID }),
             Client1 = Client#client{ player = Player },
-            PlayerQuery = #player_query{player = Client1#client.player},
-            BalanceQuery = #balance_query{},
-            gen_server:cast(Client1#client.player, PlayerQuery),
-            gen_server:cast(Client1#client.player, BalanceQuery),
+            %% PlayerQuery = #player_query{player = Client1#client.player},
+            %% BalanceQuery = #balance_query{},
+            %% gen_server:cast(Client1#client.player, PlayerQuery),
+            %% gen_server:cast(Client1#client.player, BalanceQuery),
             Client1
     end.
 
@@ -391,4 +391,10 @@ start_test_game(R) ->
 %%
 
 test() ->
+    {ok,S}=gen_tcp:connect(localhost,9888,[binary,{packet,2}]),
+    pp:send(S,#login{nick= <<"1010">> ,pass= <<"pass">>},[]),
+   % pp:send(S,#game_query{game_type= <<0:8>>,limit_type= <<0:8>>,expected=#query_op{op= <<1:8>>,val= <<5:32>>}, min=#query_op{op= <<3:8>>,val= <<20:32>>},timeout=#query_op{op= <<3:8>>, val= <<9000:32>>}},[]),
+    gen_tcp:send(S,<<13,0:8,0:8,0,5:32,1,20:32,1,9000:32>>),
+    gen_tcp:send(S, <<8,873:32,1,20:32>>),
+    
     ok.
