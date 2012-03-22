@@ -169,11 +169,11 @@ handle_cast(R, Data)
        is_record(R, come_back) ->
     Game = element(2, R),
     R1 = if
-             is_record(R, leave) ->
-                 R#leave{ player = self(), state = ?PS_CAN_LEAVE };
-             true ->
-                 setelement(3, R, self())
-         end,
+    	is_record(R, leave) ->
+        	R#leave{ player = self(), state = ?PS_CAN_LEAVE };
+        true ->
+            setelement(3, R, self())
+    end,
     case gb_trees:is_defined(Game, Data#pdata.playing) of
         true ->
             gen_server:cast(Game, R1);
