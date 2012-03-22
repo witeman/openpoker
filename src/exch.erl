@@ -20,7 +20,7 @@
 
 -module(exch, [Cbk, Context, Modules]).
 -behaviour(gen_server).
-
+%% Cbk is game modulex
 %%%
 %%% A stack of game modules
 %%%
@@ -64,7 +64,7 @@ behaviour_info(callbacks) ->
 
 start(Parent, Args) ->
     Id = Cbk:id(),
-    gen_server:start({global, {Cbk, Id}}, THIS, [Parent, Id|Args], []).
+    gen_server:start({global, {Cbk, Id}}, THIS, [Parent, Id|Args], []). %THIS ??
 
 stop(Pid)
   when is_pid(Pid) ->
