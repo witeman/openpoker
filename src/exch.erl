@@ -64,7 +64,7 @@ behaviour_info(callbacks) ->
 
 start(Parent, Args) ->
     Id = Cbk:id(),
-    gen_server:start({global, {Cbk, Id}}, THIS, [Parent, Id|Args], []). %THIS ??
+    gen_server:start({global, {Cbk, Id}}, THIS, [Parent, Id|Args], []). %% THIS means to this parameterized module, since if only ?MODULE can not express THIS.
 
 stop(Pid)
   when is_pid(Pid) ->
