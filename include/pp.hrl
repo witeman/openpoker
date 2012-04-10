@@ -439,9 +439,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 用户注册的协议
--define(CMD_SIGN_IN, 54).  
+-define(CMD_SIGN_UP, 54).  
 
--record(sign_in, {
+-record(sign_up, {
         nick,
         pass
     }).

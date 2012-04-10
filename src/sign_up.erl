@@ -1,4 +1,5 @@
--module(sign_in).
+-module(sign_up).
+
 
 %%%
 %%% 用户注册处理
@@ -11,10 +12,10 @@
 -include("test.hrl").
 -include("schema.hrl").
 
-sign_in(Nick, Pass, Socket) 
+sign_up(Nick, Pass, Socket) 
     when is_binary(Nick),
          is_binary(Pass) ->
-    io:format("sign_in:sign_in(~p, ~p, ~p)~n", [Nick, Pass, Socket]),
+    io:format("sign_up:sign_up(~p, ~p, ~p)~n", [Nick, Pass, Socket]),
     case player:create(Nick, Pass, <<"Test">>, 10000) of
         {error, Error} ->
             {error, Error};
