@@ -634,8 +634,8 @@ pong() ->
 %% New Command
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 注册
-sign_in() ->
-    record(sign_in, {
+sign_up() ->
+    record(sign_up, {
              nick(),
              pass()
             }).
@@ -837,8 +837,8 @@ write(R) when is_record(R, pong) ->
     [?CMD_PONG|pickle(pong(), R)];
 
 %% 新增的注册协议的序列化写函数
-write(R) when is_record(R, sign_in) ->
-    [?CMD_SIGN_IN|pickle(sign_in(), R)];
+write(R) when is_record(R, sign_up) ->
+    [?CMD_SIGN_UP|pickle(sign_up(), R)];
 write(R) when is_record(R, notify_seat_detail) ->
     [?NOTIFY_SEAT_DETAIL | pickle(notify_seat_detail(), R)];
 write(R) when is_record(R, notify_game_detail) ->
@@ -1013,8 +1013,8 @@ read(<<?CMD_PONG, Bin/binary>>) ->
     unpickle(pong(), Bin);
 
 %% 新增的注册协议的读函数
-read(<<?CMD_SIGN_IN, Bin/binary>>) ->
-    unpickle(sign_in(), Bin);
+read(<<?CMD_SIGN_UP, Bin/binary>>) ->
+    unpickle(sign_up(), Bin);
 read(<<?NOTIFY_UNWATCH, Bin/binary>>) ->
     unpickle(notify_unwatch(), Bin);
 read(<<?NOTIFY_GAME_DETAIL, Bin/binary>>) ->

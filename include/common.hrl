@@ -176,10 +176,13 @@
 					player = none,
 					pid = none,
 					cards = [], 
-					rank = none,
-					high1 = none,
+					rank = none, %show down 的时候牌面rank的序号
+					high1 = none, %牌面最大的牌的点数1024就是2的10次方，代表J
 					high2 = none,
-					score = 0
+						%tow pair，fullhouse，才有hight2，
+						%因为可能要靠第二个牌的点数，判断牌面的大小 
+					score = 0 %这个是内部处理hight的时候没去掉多余的0的所大小
+                                        	  %% 0000100000000000，就把前面的0去掉
 				 }).
 
 -record(player_hand, {

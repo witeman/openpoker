@@ -213,11 +213,11 @@ process_logout(Client, _Socket) ->
     {ok, Visitor} = visitor:start(self()),
     Client#client{ player = Visitor }.
 
-process_sign_in(Client, Socket, Nick, Pass) ->
+process_sign_up(Client, Socket, Nick, Pass) ->
     io:format("SIGNIN: NICK ~p, PASS ~p~n", [Nick, Pass]),
-    case sign_in:sign_in(Nick, Pass, Socket) of
+    case sign_up:sign_up(Nick, Pass, Socket) of
         {error, Error} ->
-            ok = ?tcpsend(Socket, #bad{ cmd = ?CMD_SIGN_IN, error = Error}),
+            ok = ?tcpsend(Socket, #bad{ cmd = ?CMD_SIGN_UP, error = Error}),
             Client;
         {ok, PID} ->
             ok = ?tcpsend(Socket, #you_are{ player = PID}),
@@ -290,8 +290,8 @@ parse_packet(Socket, Client) ->
                               process_login(Client, Socket, Nick, Pass);
                           #logout{} ->
                               process_logout(Client, Socket);
-                          #sign_in{ nick = Nick, pass = Pass} ->
-                              process_sign_in(Client, Socket, Nick, Pass);
+                          #sign_up{ nick = Nick, pass = Pass} ->
+                              process_sign_up(Client, Socket, Nick, Pass);
                           R = #ping{} ->
                               process_ping(Client, Socket, R);
                           R = #pong{} ->
@@ -391,9 +391,11 @@ start_test_game(R) ->
 %%
 
 test() ->
+  
     {ok,S}=gen_tcp:connect(localhost,9888,[binary,{packet,2}]),
     pp:send(S,#login{nick= <<"1010">> ,pass= <<"pass">>},[]),
    % pp:send(S,#game_query{game_type= <<0:8>>,limit_type= <<0:8>>,expected=#query_op{op= <<1:8>>,val= <<5:32>>}, min=#query_op{op= <<3:8>>,val= <<20:32>>},timeout=#query_op{op= <<3:8>>, val= <<9000:32>>}},[]),
+    pp:send(S,#sign_up{nick = <<"1">> ,pass = <<"p">>},[]),
     gen_tcp:send(S,<<13,0:8,0:8,0,5:32,1,20:32,1,9000:32>>),
     gen_tcp:send(S, <<8,873:32,1,20:32>>),
     gen_tcp:send(S,<<14,873:32>>),
