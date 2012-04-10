@@ -88,16 +88,19 @@ is_straight_flush(Hand, Rep) ->
 
 is_flush(Hand, Rep) ->
     Mask = make_mask(Rep),
+    io:format("Mask ~w~n",[Mask]),
     is_flush(Hand, Mask, Rep).
 
 is_flush(Hand, Mask, [H|T]) ->
     Score = Mask band H,
+    io:format("Score =Mask band H ~w~n",[Score]),
     Count = bits:bits1(Score),
     if 
         Count < 5 ->
             is_flush(Hand, Mask, T);
         true ->
             High1 = bits:clear_extra_bits(Score, 5),
+	    io:format("high1~w~n",[High1]),
             Hand#hand{ rank = ?HC_FLUSH, high1 = High1 }
     end;
 
@@ -609,6 +612,7 @@ rank_flush3_test() ->
 
 rank_full_house1_test() ->
     H = rank_test_hand("4D JS 5H JD JC QH QS"),
+%%    io:format("Hand ~w~n",[H]),			
     ?assertEqual(?HC_FULL_HOUSE, H#hand.rank),
     ?assertEqual(2#00010000000000, H#hand.high1),
     ?assertEqual(2#00100000000000, H#hand.high2),
