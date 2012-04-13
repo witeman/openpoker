@@ -22,8 +22,8 @@
 					trace
 				 }).
 
--define(SLOW_PLAYER_TIMEOUT, 18000).
--define(FAST_PLAYER_TIMEOUT, 9000).
+-define(SLOW_PLAYER_TIMEOUT, 180000).
+-define(FAST_PLAYER_TIMEOUT, 90000).
 -define(START_DELAY, 14000).
 
 %%% Error codes

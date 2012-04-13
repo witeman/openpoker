@@ -110,6 +110,7 @@ login(Info, Player, player_busy, Args) ->
 login(Info, Player, player_offline, [Nick, _, Socket]) ->
     %% start player process
     {ok, Pid} = player:start(Nick),
+     io:format("login:login player:start ~w~n",[player:start(Nick)]),
     ID = gen_server:call(Pid, 'ID'),
     gen_server:cast(Pid, {'SOCKET', Socket}),
     %% update player record

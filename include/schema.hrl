@@ -10,6 +10,7 @@
 					user_id, % external user id
 					nick,
 					password,
+	  photo,				%
 					location,
 					login_errors = 0,
 					disabled = false % player is disabled

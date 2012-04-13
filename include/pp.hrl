@@ -120,6 +120,10 @@
 -record(player_query, {
 					player
 				 }).
+-define(CMD_PHOTO_QUERY,101).
+-record(photo_query,{
+ 	                                player
+	                         }).
 
 -define(CMD_BALANCE_QUERY, 16).
 
@@ -160,8 +164,16 @@
 					player,
 					total_inplay, 
 					nick,
+	                                photo,
 					location
 				 }).
+
+-define(CMD_PHOTO_INFO,102).
+
+-record(photo_info,{
+	                                player,
+	                                photo
+	                         }).
 
 -define(CMD_BET_REQ, 20).
 
