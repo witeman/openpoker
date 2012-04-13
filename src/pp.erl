@@ -82,6 +82,8 @@ nick() ->
 
 pass() ->
     string().
+photo() ->
+    binary(int()).
 
 message() ->
     string().
@@ -403,6 +405,10 @@ player_query() ->
              player()
              %int()
             }).
+photo_query()->
+    record(photo_query,  {
+	     player()
+	    }).
 
 balance_query() ->
     record(balance_query, {
@@ -439,9 +445,14 @@ player_info() ->
              player(),
              total_inplay_amount(), 
              nick(),
+	     photo(),
              location()
             }).
-
+photo_info() ->
+    record(photo_info,{
+	     player(),
+	     photo()
+	    }).
 bet_req() ->
     record(bet_req, {
              game(),
@@ -737,6 +748,10 @@ write(R) when is_record(R, seat_query) ->
 write(R) when is_record(R, player_query) ->
     [?CMD_PLAYER_QUERY|pickle(player_query(), R)];
 
+write(R) when is_record(R, photo_query) ->
+    [?CMD_PHOTO_QUERY|pickle(photo_query(), R)];
+
+
 write(R) when is_record(R, balance_query) ->
     [?CMD_BALANCE_QUERY|pickle(balance_query(), R)];
 
@@ -748,6 +763,10 @@ write(R) when is_record(R, game_info) ->
 
 write(R) when is_record(R, player_info) ->
     [?CMD_PLAYER_INFO|pickle(player_info(), R)];
+
+
+write(R) when is_record(R, photo_info) ->
+    [?CMD_PHOTO_INFO|pickle(photo_info(), R)];
 
 write(R) when is_record(R, bet_req) ->
     [?CMD_BET_REQ|pickle(bet_req(), R)];
@@ -913,6 +932,9 @@ read(<<?CMD_SEAT_QUERY, Bin/binary>>) ->
 read(<<?CMD_PLAYER_QUERY, Bin/binary>>) ->
     unpickle(player_query(), Bin);
 
+read(<<?CMD_PHOTO_QUERY, Bin/binary>>) ->
+    unpickle(photo_query(), Bin);
+
 read(<<?CMD_BALANCE_QUERY, Bin/binary>>) ->
     unpickle(balance_query(), Bin);
 
@@ -924,6 +946,10 @@ read(<<?CMD_GAME_INFO, Bin/binary>>) ->
 
 read(<<?CMD_PLAYER_INFO, Bin/binary>>) ->
     unpickle(player_info(), Bin);
+
+
+read(<<?CMD_PHOTO_INFO, Bin/binary>>) ->
+    unpickle(photo_info(), Bin);
 
 read(<<?CMD_BET_REQ, Bin/binary>>) ->
     unpickle(bet_req(), Bin);
