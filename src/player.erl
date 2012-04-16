@@ -26,7 +26,7 @@
 
 -export([start/1, stop/1, stop/2]).
 
--export([create/4]).
+-export([create/4,update_photo/2]).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -42,7 +42,9 @@
           playing = gb_trees:empty(),
           watching = gb_trees:empty(),          
           zombie = 0, % % on autoplay until game ends
-          self
+          self,
+	  photo=undefined,
+	  nick=undefined
          }).
 
 start(Nick) 
@@ -158,7 +160,7 @@ handle_cast(R = #join{ game = Game }, Data) ->
     end,
     {noreply, Data};
 
-handle_cast(R, Data) 
+handle_cast(R, Data) 				%player的动作,与游戏开始后有关的都cast to game?
   when is_record(R, wait_bb);
        is_record(R, raise);
        is_record(R, leave);
@@ -169,11 +171,11 @@ handle_cast(R, Data)
        is_record(R, come_back) ->
     Game = element(2, R),
     R1 = if
-    	is_record(R, leave) ->
-        	R#leave{ player = self(), state = ?PS_CAN_LEAVE };
-        true ->
-            setelement(3, R, self())
-    end,
+	     is_record(R, leave) ->
+		 R#leave{ player = self(), state = ?PS_CAN_LEAVE };
+	     true ->
+		 setelement(3, R, self())
+	 end,
     case gb_trees:is_defined(Game, Data#pdata.playing) of
         true ->
             gen_server:cast(Game, R1);
@@ -189,42 +191,52 @@ handle_cast(#seat_query{ game = Game }, Data) ->
     {noreply, Data};
 
 handle_cast(#player_query{ player = PID }, Data) ->
-    %io:format("PID: ~p~n", [PID]),
-    %io:format("DATA: ~p~n", [Data]),
+						%io:format("PID: ~p~n", [PID]),
+						%io:format("DATA: ~p~n", [Data]),
     Self = self(),
     case PID of
         Self ->
-            %io:format("PID: ~p~n", [PID]),
+						%io:format("PID: ~p~n", [PID]),
             case db:read(tab_player_info, Data#pdata.pid) of
                 [Info] ->
-                    %io:format("INFO: ~p~n", [Info]),
+						%io:format("INFO: ~p~n", [Info]),
                     handle_cast(_ = #player_info{
-                            player = Data#pdata.pid,
-                            total_inplay = inplay(Data),
-                            nick = Info#tab_player_info.nick,
-                            location = Info#tab_player_info.location
-                        }, Data);
+				  player = Data#pdata.pid,
+				  total_inplay = inplay(Data),
+				  nick = Info#tab_player_info.nick,
+				  location = Info#tab_player_info.location
+				 }, Data);
                 _ -> 
                     oops
             end;
         _ ->
-            %io:format("NOT MATCH~n"),
+						%io:format("NOT MATCH~n"),
             oops
     end,
     {noreply, Data};
-%    case db:read(tab_player_info, PID) of
-%        [Info] ->
-%            handle_cast(_ = #player_info{
-%                          player = self(),
-%                          total_inplay = inplay(Data),
-%                          nick = Info#tab_player_info.nick,
-%                          location = Info#tab_player_info.location
-%                         }, Data);
-%        _ ->
-%            io:format("Not Found!~n"),
-%            oops
-%    end,
-%    {noreply, Data};
+						%    case db:read(tab_player_info, PID) of
+						%        [Info] ->
+						%            handle_cast(_ = #player_info{
+						%                          player = self(),
+						%                          total_inplay = inplay(Data),
+						%                          nick = Info#tab_player_info.nick,
+						%                          location = Info#tab_player_info.location
+						%                         }, Data);
+						%        _ ->
+						%            io:format("Not Found!~n"),
+						%            oops
+						%    end,
+						%    {noreply, Data};
+
+handle_cast(#photo_query{player=PID},Data)->
+    Photo = Data#pdata.photo,
+    io:format("photo:~w~n",[Photo]),
+    Pid = get_pid(PID,Data),
+    handle_cast(_=#photo_info{player=Pid,photo=Photo},Data),
+    {noreply,Data};
+
+
+
 
 handle_cast(R = #start_game{}, Data) ->
     [CC] = db:read(tab_cluster_config, 0),
@@ -256,29 +268,30 @@ handle_cast(#balance_query{}, Data) ->
     end,
     {noreply, Data};
 
-handle_cast(R, Data)
+handle_cast(R, Data)				%通知客户端
   when is_record(R, seat_state);
-        is_record(R, player_info);
-        is_record(R, bet_req);
-        is_record(R, game_stage);
-        is_record(R, notify_start_game);
-        is_record(R, notify_end_game);
-        is_record(R, notify_cancel_game);
-        is_record(R, notify_join);
-        is_record(R, notify_draw);
-        is_record(R, notify_shared);
-        is_record(R, notify_leave);
-        is_record(R, notify_leave);
-        is_record(R, notify_raise);
-        is_record(R, notify_win);
-        is_record(R, notify_hand);
-        is_record(R, show_cards);
-        is_record(R, notify_button);
-        is_record(R, notify_sb);
-        is_record(R, notify_game_detail);
-        is_record(R, notify_seat_detail);
-        is_record(R, notify_unwatch);
-        is_record(R, notify_bb) ->
+       is_record(R, player_info);
+       is_record(R, photo_info);
+       is_record(R, bet_req);
+       is_record(R, game_stage);
+       is_record(R, notify_start_game);
+       is_record(R, notify_end_game);
+       is_record(R, notify_cancel_game);
+       is_record(R, notify_join);
+       is_record(R, notify_draw);
+       is_record(R, notify_shared);
+       is_record(R, notify_leave);
+       is_record(R, notify_raise);
+       is_record(R, notify_win);
+       is_record(R, notify_hand);
+       is_record(R, show_cards);
+       is_record(R, notify_button);
+       is_record(R, notify_sb);
+       is_record(R, notify_game_detail);
+       is_record(R, notify_seat_detail);
+       is_record(R, notify_unwatch);
+       is_record(R, notify_bb) ->
+    io:format("~w~n", [R]),
     forward_to_client(R, Data),
     {noreply, Data};
 
@@ -301,6 +314,10 @@ handle_call('ID', _From, Data) ->
 
 handle_call('SOCKET', _From, Data) ->
     {reply, Data#pdata.socket, Data};
+handle_call('NICK_QUERY',_From,Data) ->
+    {reply,Data#pdata.nick,Data};
+handle_call('PHOTO_QUERY',_From,Data) ->
+    {reply,Data#pdata.photo,Data};
 
 handle_call('GAMES', _From, Data) ->
     {reply, gb_trees:keys(Data#pdata.playing), Data};
@@ -425,3 +442,51 @@ forward_to_client(Event, Data) ->
             ok
     end.
 
+get_nick(Player,Data) when is_pid(Player)->
+    case Player == self() of
+	true->
+	    Data#pdata.nick;
+	_ ->
+	    gen_server:call(Player,'NICK_QUERY')
+    end;
+get_nick(_,_) ->
+    undefined.
+
+get_photo(Player,Data) when is_pid(Player)->
+    case Player == self() of
+	true->
+	    Data#pdata.photo;
+	_ ->
+	    gen_server:call(Player,'PHOTO_QUERY')
+    end;
+get_photo(_,_) ->
+    undefined.
+
+
+
+get_pid(Player,Data) when is_pid(Player)->
+    case Player == self() of
+	true->
+	    Data#pdata.pid;
+	_ ->
+	    gen_server:call(Player,'ID')
+    end;
+get_pid(_,_) ->
+    undefined.
+
+	    
+
+    
+update_photo(ID, Photo) when is_binary(Photo) ->
+    case db:read(tab_player_info, ID) of
+	[Info] -> 
+	    io:format("ssss~w~n",[Info]),
+	    Info1 = Info#tab_player_info {
+		      photo = Photo
+		     },
+	    io:format("llll~w~n",[Info1]),
+	    db:write(Info1),
+	    {ok, ID};
+	_ ->
+	    {error, player_not_exists}
+    end.

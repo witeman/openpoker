@@ -76,7 +76,7 @@ Start to game updates. A stream of packets will be sent when subscribing to a ga
 
 UNWATCH:
 
-Stop game updates.
+Stop game updates.		%
 
 0   1     5
 +---+-----+

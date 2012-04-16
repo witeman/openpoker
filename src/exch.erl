@@ -86,7 +86,7 @@ call(Exch, Event) ->
 
 init(Args = [Parent|_]) ->
     process_flag(trap_exit, true),
-    {Data, Start} = Cbk:start(tl(Args)),
+    {Data, Start} = Cbk:start(tl(Args)),	%game:start
     Exch = #exch{
       parent = Parent,
       data = Data,

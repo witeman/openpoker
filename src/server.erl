@@ -390,13 +390,8 @@ start_test_game(R) ->
 %% Test suite
 %%
 
-test() ->
-  
-    {ok,S}=gen_tcp:connect(localhost,9888,[binary,{packet,2}]),
-    pp:send(S,#login{nick= <<"1010">> ,pass= <<"pass">>},[]),
-   % pp:send(S,#game_query{game_type= <<0:8>>,limit_type= <<0:8>>,expected=#query_op{op= <<1:8>>,val= <<5:32>>}, min=#query_op{op= <<3:8>>,val= <<20:32>>},timeout=#query_op{op= <<3:8>>, val= <<9000:32>>}},[]),
-    pp:send(S,#sign_up{nick = <<"1">> ,pass = <<"p">>},[]),
-    gen_tcp:send(S,<<13,0:8,0:8,0,5:32,1,20:32,1,9000:32>>),
-    gen_tcp:send(S, <<8,873:32,1,20:32>>),
-    gen_tcp:send(S,<<14,873:32>>),
+test()
+->
     ok.
+    
+

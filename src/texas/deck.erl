@@ -89,12 +89,12 @@ make_deck() ->
            ?CS_SPADES ],
     [hand:make_card(Face, Suit) || Face <- L1, Suit <- L2].
 
-shuffle(Cards) ->
+shuffle(Cards) ->				%random the cards
     Temp = lists:map(fun(X) ->
-                             {random:uniform(1 bsl 64), X}
+                             {random:uniform(1 bsl 64), X} %{key,card},random a key 
                      end,
                      Cards),
-    Temp1 = lists:keysort(1, Temp),
+    Temp1 = lists:keysort(1, Temp),		
     lists:map(fun(X) ->
                       element(2, X)
               end,
